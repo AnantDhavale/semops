@@ -9,7 +9,7 @@ README = ROOT / "README.md"
 
 setup(
     name="semops",
-    version="0.3.0",
+    version="0.4.0",
     description="Semantic operations for Python. The NumPy of meaning.",
     long_description=README.read_text(encoding="utf-8"),
     long_description_content_type="text/markdown",
@@ -19,6 +19,5 @@ setup(
     extras_require={
         "openai": ["openai>=1.0"],
         "local": ["sentence-transformers>=2.0"],
-        "parquet": ["pyarrow>=15.0"],
     },
 )

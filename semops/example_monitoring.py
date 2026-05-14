@@ -6,8 +6,6 @@ Run with:
     python semops/example_monitoring.py
 """
 
-from pathlib import Path
-
 import semops as so
 from semops.adapters.local_adapter import LocalAdapter
 
@@ -53,14 +51,7 @@ print("\n=== Policy distance ===")
 for item in policy_report.items:
     print(f"{item.score:.2f} flagged={item.flagged} :: {item.text}")
 
-sink = so.ListSink()
-so.emit_report(sink, brand_report, tags={"dataset": "candidate_outputs"})
-so.emit_report(sink, topic_report, tags={"dataset": "candidate_outputs"})
-so.emit_report(sink, policy_report, tags={"dataset": "candidate_outputs"})
-
-output_dir = Path("artifacts")
-output_dir.mkdir(exist_ok=True)
-so.export_json(sink.rows(), output_dir / "semops_events.json")
-so.export_csv(sink.rows(), output_dir / "semops_events.csv")
-
-print("\nExported local event records to ./artifacts")
+print("\n=== Dataset summaries ===")
+print(brand_report)
+print(topic_report)
+print(policy_report)

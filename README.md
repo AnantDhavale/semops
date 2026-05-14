@@ -6,13 +6,14 @@
 
 It gives you reusable primitives for search, classification, deduplication, clustering, reference-set scoring, threshold calibration, lightweight evaluation, and local monitoring.
 
+**Library philosophy:** `semops` computes. User code stores.
+
 ## Install
 
 ```bash
 pip install semops
 pip install semops[openai]
 pip install semops[local]
-pip install semops[parquet]
 ```
 
 ## Quickstart
@@ -193,22 +194,6 @@ retrieval = so.evaluate_retrieval(queries, expected, corpus, adapter)
 
 Use these helpers when you need to choose thresholds or compare semantic retrieval quality on your own data.
 
-## Instrumentation and export
-
-`semops` includes a simple local event schema and export helpers for notebooks and pipelines.
-
-```python
-sink = so.ListSink()
-report = so.score_off_brand(candidate_outputs, brand_examples, adapter, threshold=0.50)
-so.emit_report(sink, report, tags={"project": "docs-bot"})
-
-rows = sink.rows()
-so.export_json(rows, "semops_events.json")
-so.export_csv(rows, "semops_events.csv")
-```
-
-Parquet export is optional and requires `semops[parquet]`.
-
 ## Adapters
 
 | Adapter | Install | Use case |
@@ -249,7 +234,6 @@ Included here:
 - adapters and adapter interfaces
 - local evaluation, calibration, and reference-set scoring
 - local-only monitoring reports
-- generic event records and file export helpers
 
 Not included here:
 
@@ -257,6 +241,7 @@ Not included here:
 - dashboards, alerts, or scheduled jobs
 - team workflows, review queues, or governance controls
 - bundled API credits or managed model access
+- library-owned logging, event sinks, or storage schemas
 
 ## Contact
 

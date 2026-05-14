@@ -13,8 +13,6 @@ from semops.evals import (
     evaluate_retrieval,
     sweep_thresholds,
 )
-from semops.exporters import export_csv, export_json, export_parquet, to_rows
-from semops.instrumentation import ListSink, SemanticEvent, emit_event, emit_metric, emit_report, make_event
 from semops.local_adapter import LocalAdapter
 from semops.monitor import (
     MonitorReport,
@@ -36,7 +34,7 @@ from semops.references import (
 )
 from semops.stub_adapter import StubAdapter
 
-__version__ = "0.3.0"
+__version__ = "0.4.0"
 __all__ = [
     "BaseAdapter",
     "LocalAdapter",
@@ -45,10 +43,8 @@ __all__ = [
     "ReferenceScore",
     "RetrievalMetrics",
     "ScoredText",
-    "SemanticEvent",
     "StubAdapter",
     "ThresholdMetrics",
-    "ListSink",
     "calibrate_threshold",
     "classification_metrics",
     "classify",
@@ -58,14 +54,7 @@ __all__ = [
     "drift",
     "embed",
     "embed_many",
-    "emit_event",
-    "emit_metric",
-    "emit_report",
     "evaluate_retrieval",
-    "export_csv",
-    "export_json",
-    "export_parquet",
-    "make_event",
     "match_references",
     "nearest",
     "nearest_many",
@@ -84,5 +73,4 @@ __all__ = [
     "sim_many",
     "sim_matrix",
     "sweep_thresholds",
-    "to_rows",
 ]
