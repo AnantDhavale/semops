@@ -24,7 +24,7 @@ It gives you reusable primitives for embedding, similarity, ranking, clustering,
 
 It does not ship cloud infra, hosted APIs, or bundled model credits.
 
-## How is it useful
+## Features
 
 `semops` solves code-level semantic tasks that teams hit immediately:
 
