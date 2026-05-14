@@ -22,11 +22,11 @@ python semops/example_monitoring.py
 
 It gives you reusable primitives for embedding, similarity, ranking, clustering, reference-set scoring, threshold calibration, lightweight evaluation, and local monitoring.
 
-It does not ship cloud infra, hosted APIs, dashboards, or bundled model credits.
+It does not ship cloud infra, hosted APIs, or bundled model credits.
 
-## Why it is useful on its own
+## How is it useful
 
-`semops` is still useful without any hosted product because it solves the code-level semantic tasks that teams hit immediately:
+`semops` solves code-level semantic tasks that teams hit immediately:
 
 - semantic search and relevance ranking
 - duplicate detection and record cleanup
@@ -181,6 +181,8 @@ Not included here:
 ## Contact
 
 If you have any questions, suggestions or find the library useful, please drop me a line at anantdhavale@gmail.com
+
+Also check 'Cerone' on pypi pip install cerone
 
 ## License
 
