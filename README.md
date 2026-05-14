@@ -20,7 +20,7 @@ python semops/example_monitoring.py
 
 `semops` is a local, model-agnostic semantic utility layer for Python.
 
-It gives you reusable primitives for embedding, similarity, ranking, clustering, reference-set scoring, threshold calibration, lightweight evaluation, and local monitoring.
+It gives you reusable primitives for search, classification, deduplication, clustering, reference-set scoring, threshold calibration, lightweight evaluation, and local monitoring.
 
 It does not ship cloud infra, hosted APIs, or bundled model credits.
 
@@ -48,9 +48,11 @@ vector = so.embed("refund failed after login", adapter)
 score = so.sim("login broken", "unable to sign in", adapter)
 delta = so.diff("old copy", "new copy", adapter)
 shift = so.drift("before", "after", adapter)
+label, confidence = so.classify("reset email never arrived", ["login", "password reset", "billing"], adapter)
 ranked = so.rank("auth issues", ["reset email failed", "crash on boot"], adapter)
 match = so.nearest("cannot log in", ["password reset failed", "login is broken"], adapter)
 groups = so.cluster(["login failed", "app crashes", "sign in blocked"], adapter, k=2)
+duplicates = so.dedup(["login broken", "unable to sign in", "invoice missing", "login is broken"], adapter)
 ```
 
 ## Batch APIs
@@ -60,6 +62,22 @@ scores = so.sim_many("login issue", tickets, adapter)
 matrix = so.sim_matrix(queries, tickets, adapter)
 best = so.nearest_many(queries, tickets, adapter)
 rankings = so.rank_many(queries, tickets, adapter, top_k=3)
+```
+
+## Classification and deduplication
+
+```python
+labels = ["login issue", "password reset", "billing issue"]
+label, score = so.classify("my reset email never arrived", labels, adapter)
+
+records = [
+    "I can't log into my account",
+    "Unable to sign in",
+    "Invoice PDF is missing",
+    "Login is broken for me",
+]
+
+duplicate_groups = so.dedup(records, adapter, threshold=0.80)
 ```
 
 ## Bring your own model

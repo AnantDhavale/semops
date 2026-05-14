@@ -26,7 +26,7 @@ from semops.monitor import (
     score_policy_distance,
 )
 from semops.openai_adapter import OpenAIAdapter
-from semops.ops import cluster, diff, drift, embed, embed_many, nearest, rank, sim
+from semops.ops import classify, cluster, dedup, diff, drift, embed, embed_many, nearest, rank, sim
 from semops.references import (
     ReferenceScore,
     match_references,
@@ -36,7 +36,7 @@ from semops.references import (
 )
 from semops.stub_adapter import StubAdapter
 
-__version__ = "0.2.0"
+__version__ = "0.3.0"
 __all__ = [
     "BaseAdapter",
     "LocalAdapter",
@@ -51,7 +51,9 @@ __all__ = [
     "ListSink",
     "calibrate_threshold",
     "classification_metrics",
+    "classify",
     "cluster",
+    "dedup",
     "diff",
     "drift",
     "embed",

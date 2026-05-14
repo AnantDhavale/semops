@@ -54,6 +54,13 @@ def nearest(query: str, corpus: List[str], adapter: BaseAdapter) -> Tuple[str, f
     return corpus[idx], scores[idx]
 
 
+def classify(text: str, labels: List[str], adapter: BaseAdapter) -> Tuple[str, float]:
+    """Assign a text to the closest semantic label."""
+    if len(labels) == 0:
+        raise ValueError("labels must contain at least one label")
+    return nearest(text, labels, adapter)
+
+
 def rank(query: str, corpus: List[str], adapter: BaseAdapter) -> List[Tuple[str, float]]:
     """Rank corpus by semantic relevance to query."""
     if len(corpus) == 0:
@@ -96,4 +103,45 @@ def cluster(texts: List[str], adapter: BaseAdapter, k: int = 3) -> List[List[str
     groups: List[List[str]] = [[] for _ in range(k)]
     for text, label in zip(texts, labels):
         groups[label].append(text)
+    return groups
+
+
+def dedup(texts: List[str], adapter: BaseAdapter, threshold: float = 0.85) -> List[List[str]]:
+    """
+    Group near-duplicate texts using semantic similarity.
+    Returns only groups with at least two items.
+    """
+    if len(texts) == 0:
+        return []
+    if not 0 <= threshold <= 1:
+        raise ValueError("threshold must be between 0 and 1")
+
+    vecs = _embed_many_array(texts, adapter)
+    sim_matrix = np.clip(np.dot(vecs, vecs.T), 0, 1)
+
+    visited = [False] * len(texts)
+    groups: List[List[str]] = []
+
+    for start in range(len(texts)):
+        if visited[start]:
+            continue
+
+        stack = [start]
+        component: List[int] = []
+        visited[start] = True
+
+        while stack:
+            idx = stack.pop()
+            component.append(idx)
+            neighbors = np.where(sim_matrix[idx] >= threshold)[0]
+            for neighbor in neighbors:
+                neighbor_idx = int(neighbor)
+                if not visited[neighbor_idx]:
+                    visited[neighbor_idx] = True
+                    stack.append(neighbor_idx)
+
+        if len(component) >= 2:
+            component.sort()
+            groups.append([texts[idx] for idx in component])
+
     return groups
