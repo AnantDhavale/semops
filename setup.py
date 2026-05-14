@@ -4,7 +4,7 @@ from setuptools import find_packages, setup
 
 
 ROOT = Path(__file__).parent
-README = ROOT / "semops" / "README.md"
+README = ROOT / "README.md"
 
 
 setup(
