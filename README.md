@@ -2,6 +2,12 @@
 
 **Semantic operations for Python. The NumPy of meaning.**
 
+`semops` is a local, model-agnostic semantic utility layer for Python.
+
+It gives you reusable primitives for search, classification, deduplication, clustering, reference-set scoring, threshold calibration, lightweight evaluation, and local monitoring.
+
+## Install
+
 ```bash
 pip install semops
 pip install semops[openai]
@@ -9,34 +15,7 @@ pip install semops[local]
 pip install semops[parquet]
 ```
 
-Run the example scripts from the project root:
-
-```bash
-python semops/example_tickets.py
-python semops/example_monitoring.py
-```
-
-## What it is
-
-`semops` is a local, model-agnostic semantic utility layer for Python.
-
-It gives you reusable primitives for search, classification, deduplication, clustering, reference-set scoring, threshold calibration, lightweight evaluation, and local monitoring.
-
-It does not ship cloud infra, hosted APIs, or bundled model credits.
-
-## Features
-
-`semops` solves code-level semantic tasks that teams hit immediately:
-
-- semantic search and relevance ranking
-- duplicate detection and record cleanup
-- clustering unlabeled text into themes
-- routing tickets, queries, or documents by meaning
-- checking whether outputs stay on-topic, on-brand, or near policy examples
-- evaluating thresholds before hard-coding rules into an app or pipeline
-- exporting semantic scores into notebooks, data jobs, or existing observability stacks
-
-## Core API
+## Quickstart
 
 ```python
 import semops as so
@@ -44,32 +23,82 @@ from semops.adapters.local_adapter import LocalAdapter
 
 adapter = LocalAdapter()
 
-vector = so.embed("refund failed after login", adapter)
-score = so.sim("login broken", "unable to sign in", adapter)
-delta = so.diff("old copy", "new copy", adapter)
-shift = so.drift("before", "after", adapter)
-label, confidence = so.classify("reset email never arrived", ["login", "password reset", "billing"], adapter)
-ranked = so.rank("auth issues", ["reset email failed", "crash on boot"], adapter)
-match = so.nearest("cannot log in", ["password reset failed", "login is broken"], adapter)
-groups = so.cluster(["login failed", "app crashes", "sign in blocked"], adapter, k=2)
-duplicates = so.dedup(["login broken", "unable to sign in", "invoice missing", "login is broken"], adapter)
+tickets = [
+    "I can't log into my account",
+    "Login is broken for me",
+    "Password reset email never arrived",
+    "Invoice PDF is missing",
+]
+
+match, score = so.nearest("Unable to sign in", tickets, adapter)
+label, confidence = so.classify(
+    "reset email never arrived",
+    ["login issue", "password reset", "billing issue"],
+    adapter,
+)
+duplicates = so.dedup(tickets, adapter, threshold=0.80)
+
+print(match, score)
+print(label, confidence)
+print(duplicates)
+```
+
+## What you can build with it
+
+- Semantic search and relevance ranking
+- Ticket, query, or document routing by meaning
+- Deduplication and record cleanup
+- Clustering unlabeled text into themes
+- Brand, policy, or topic alignment checks
+- Drift checks on outputs, content, or datasets
+- Threshold calibration before wiring rules into production
+
+## Core primitives
+
+```python
+vector = so.embed(text, adapter)
+score = so.sim(a, b, adapter)
+difference = so.diff(a, b, adapter)
+shift = so.drift(old_text, new_text, adapter)
+
+match, score = so.nearest(query, corpus, adapter)
+ranked = so.rank(query, corpus, adapter)
+groups = so.cluster(texts, adapter, k=3)
+
+label, score = so.classify(text, labels, adapter)
+duplicate_groups = so.dedup(texts, adapter, threshold=0.85)
 ```
 
 ## Batch APIs
 
 ```python
-scores = so.sim_many("login issue", tickets, adapter)
-matrix = so.sim_matrix(queries, tickets, adapter)
-best = so.nearest_many(queries, tickets, adapter)
-rankings = so.rank_many(queries, tickets, adapter, top_k=3)
+scores = so.sim_many(query, corpus, adapter)
+matrix = so.sim_matrix(queries, corpus, adapter)
+matches = so.nearest_many(queries, corpus, adapter)
+rankings = so.rank_many(queries, corpus, adapter, top_k=3)
 ```
 
-## Classification and deduplication
+These are useful when you need to score many inputs without writing the loops yourself.
+
+## End-to-end examples
+
+### 1. Search and routing
 
 ```python
-labels = ["login issue", "password reset", "billing issue"]
-label, score = so.classify("my reset email never arrived", labels, adapter)
+query = "customer cannot access account"
+corpus = [
+    "login issue",
+    "billing issue",
+    "shipping delay",
+]
 
+label, score = so.classify(query, corpus, adapter)
+print(label, score)
+```
+
+### 2. Deduplication
+
+```python
 records = [
     "I can't log into my account",
     "Unable to sign in",
@@ -78,22 +107,11 @@ records = [
 ]
 
 duplicate_groups = so.dedup(records, adapter, threshold=0.80)
+for group in duplicate_groups:
+    print(group)
 ```
 
-## Bring your own model
-
-```python
-from semops.base import BaseAdapter
-import numpy as np
-
-class MyAdapter(BaseAdapter):
-    def embed(self, text: str) -> np.ndarray:
-        ...
-```
-
-## Reference-set helpers
-
-Use semantic examples as anchors for brand, policy, category, or quality checks.
+### 3. Brand, policy, and topic scoring
 
 ```python
 brand_examples = [
@@ -101,14 +119,45 @@ brand_examples = [
     "Avoid hype and overstatement.",
 ]
 
-scores = so.score_references(candidate_texts, brand_examples, adapter)
+topic_examples = [
+    "Password resets and login issues",
+    "Authentication failures and locked accounts",
+]
+
+policy_examples = [
+    "Never promise guaranteed uptime.",
+    "Do not claim compliance that has not been verified.",
+]
+
+candidate_outputs = [
+    "Our product definitely guarantees zero downtime forever.",
+    "Customers are seeing login failures after password resets.",
+]
+
+brand_report = so.score_off_brand(candidate_outputs, brand_examples, adapter, threshold=0.50)
+topic_report = so.score_off_topic(candidate_outputs, topic_examples, adapter, threshold=0.45)
+policy_report = so.score_policy_distance(candidate_outputs, policy_examples, adapter, threshold=0.55)
+```
+
+## Reference-set helpers
+
+Use semantic examples as anchors for brand voice, policies, categories, or quality standards.
+
+```python
+scores = so.score_references(candidate_outputs, brand_examples, adapter)
 matches = so.match_references("This copy is bold and loud", brand_examples, adapter)
 distance = so.reference_distance("Guaranteed forever", brand_examples, adapter)
+centroid = so.reference_centroid(brand_examples, adapter)
 ```
+
+These helpers are useful when you want to ask questions like:
+- "How close is this output to our approved examples?"
+- "Which example is it most similar to?"
+- "How far has this content drifted from the reference set?"
 
 ## Local monitoring primitives
 
-These APIs are intentionally local-only. They score datasets but do not persist, schedule, or alert.
+`semops` includes local-only monitoring helpers for scoring batches of text.
 
 ```python
 drift_report = so.score_dataset_drift(baseline_outputs, candidate_outputs, adapter, threshold=0.35)
@@ -116,6 +165,8 @@ topic_report = so.score_off_topic(candidate_outputs, topic_examples, adapter, th
 brand_report = so.score_off_brand(candidate_outputs, brand_examples, adapter, threshold=0.50)
 policy_report = so.score_policy_distance(candidate_outputs, policy_examples, adapter, threshold=0.55)
 ```
+
+These return structured reports that you can inspect, export, or feed into your own pipelines.
 
 ## Calibration and evaluation
 
@@ -140,9 +191,11 @@ corpus = [
 retrieval = so.evaluate_retrieval(queries, expected, corpus, adapter)
 ```
 
-## Instrumentation and exporters
+Use these helpers when you need to choose thresholds or compare semantic retrieval quality on your own data.
 
-`semops` includes a simple local event schema for app-side instrumentation and export helpers for notebooks and pipelines.
+## Instrumentation and export
+
+`semops` includes a simple local event schema and export helpers for notebooks and pipelines.
 
 ```python
 sink = so.ListSink()
@@ -165,14 +218,28 @@ Parquet export is optional and requires `semops[parquet]`.
 | `StubAdapter` | core | Deterministic testing |
 | `YourAdapter` | - | Bring your own model |
 
-## What it is not
+You can also implement your own adapter with one method:
 
-- Not a vector database
-- Not a hosted API
-- Not a tracing platform
-- Not a monitoring dashboard
-- Not a RAG framework
-- Not free cloud infra or bundled LLM usage
+```python
+from semops.base import BaseAdapter
+import numpy as np
+
+class MyAdapter(BaseAdapter):
+    def embed(self, text: str) -> np.ndarray:
+        ...
+```
+
+## Examples
+
+Run the example scripts from the project root:
+
+```bash
+python semops/example_tickets.py
+python semops/example_monitoring.py
+```
+
+- [example_tickets.py](/Users/Anant/Desktop/semops/semops/example_tickets.py)
+- [example_monitoring.py](/Users/Anant/Desktop/semops/semops/example_monitoring.py)
 
 ## OSS boundary
 
@@ -191,16 +258,11 @@ Not included here:
 - team workflows, review queues, or governance controls
 - bundled API credits or managed model access
 
-## Examples
-
-- [example_tickets.py](/Users/Anant/Desktop/semops/semops/example_tickets.py)
-- [example_monitoring.py](/Users/Anant/Desktop/semops/semops/example_monitoring.py)
-
 ## Contact
 
 If you have any questions, suggestions or find the library useful, please drop me a line at anantdhavale@gmail.com
 
-Also check 'Cerone' on pypi pip install cerone
+Also check `Cerone` on PyPI: `pip install cerone`
 
 ## License
 
